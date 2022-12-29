@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Categories;
 use App\Games;
+use App\Mail\Order;
+use App\Orders;
+use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class GamesController extends Controller
 {
@@ -35,7 +39,7 @@ class GamesController extends Controller
     public function addGame(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|alpha|unique:categories,name',
+            'name' => 'required|string|unique:categories,name',
             'price' => 'numeric',
             'category_name' => 'required',
             'photo' => 'required|file',
@@ -81,7 +85,7 @@ class GamesController extends Controller
         $game = Games::query()->find($request->id);
 
         $this->validate($request, [
-            'name' => 'required|alpha',
+            'name' => 'required|string',
             'price' => 'numeric',
             'category_name' => 'required',
             'game_about' => 'required|string'
@@ -101,7 +105,7 @@ class GamesController extends Controller
             $game->save();
         } else {
             $this->validate($request, [
-                'name' => 'required|alpha|unique:categories,name',
+                'name' => 'required|string|unique:categories,name',
                 'price' => 'numeric',
                 'category_name' => 'required',
                 'game_about' => 'required|string'
@@ -125,4 +129,31 @@ class GamesController extends Controller
 
         return redirect()->route('categories');
     }
+
+    public function buy(Games $game)
+    {
+        return view('categories.gameBuy', ['game' => $game]);
+    }
+
+    public function buySend(Request $request)
+    {
+        $this->validate($request, [
+            'user_name' => 'required|alpha',
+            'user_email' => 'required|email'
+        ]);
+
+        $admins = User::query()->where('is_admin', '=', 'on')->get();
+
+        $order = new Orders();
+        $order->user_name = $request->user_name;
+        $order->user_email = $request->user_email;
+        $order->game_id = $request->id;
+        $order->save();
+
+        Mail::to($admins)->send(new Order(['order' => $order]));
+
+        return redirect()->route('home');
+    }
+
+
 }

@@ -15,8 +15,10 @@
                                 <div class="products-category__list__item__title-product"><a href="{{route('game', $game->id)}}">{{$game->name}}</a></div>
                                 <div class="products-category__list__item__description" style="padding: 5px; text-align: center; display: block">{{$game->about}}</div>
                                 <div style="display: flex; justify-content: space-between; margin: 5px 260px;">
-                                    <a href="{{route('games.edit', $game->id)}}" class="btn">Редактировать игру</a>
-                                    <a href="{{route('games.delete', $game->id)}}" class="btn" style="background-color: #b92a2a">Удалить игру</a>
+                                    @if(\Illuminate\Support\Facades\Auth::user()->isAdmin())
+                                        <a href="{{route('games.edit', $game->id)}}" class="btn">Редактировать игру</a>
+                                        <a href="{{route('games.delete', $game->id)}}" class="btn" style="background-color: #b92a2a">Удалить игру</a>
+                                    @endif
                                 </div>
                             </div>
                         @endforeach
